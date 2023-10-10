@@ -1,0 +1,77 @@
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from rdkit.Chem import rdMolDescriptors as rdMD
+
+inchi_str = "InChI=1S/C8H5F11O2/c9-4(10,2-1-3(20)21)5(11,12)6(13,14)7(15,16)8(17,18)19/h1-2H2,(H,20,21)"
+
+
+mol = Chem.MolFromInchi(inchi_str)
+
+mol = Chem.AddHs(mol)
+AllChem.EmbedMolecule(mol)
+AllChem.MMFFOptimizeMolecule(mol)
+
+with open('5-3-FTCA.gjf', 'w') as file:
+    file.write('%nproc=8\n')
+    file.write('%mem=4GB\n')
+    file.write('#p B3LYP/6-31G(d) opt freq\n\n')
+    file.write('Title Card Required\n\n')
+    file.write('0 1\n')
+    molecule_block = Chem.MolToMolBlock(mol)
+    for line in molecule_block.split('\n'):
+        if len(line.split()) == 4:
+            file.write(line + '\n')
+    file.write('\n')
+
+
+from rdkit import Chem
+from rdkit.Chem import AllChem
+
+# Use RDKit to convert InChI to a molecule and generate 3D coordinates
+inchi = "InChI=1S/C8H5F11O2/c9-4(10,2-1-3(20)21)5(11,12)6(13,14)7(15,16)8(17,18)19/h1-2H2,(H,20,21)"
+mol = Chem.MolFromInchi(inchi)
+mol = Chem.AddHs(mol)
+AllChem.EmbedMolecule(mol)
+AllChem.MMFFOptimizeMolecule(mol)
+
+# Create a Gaussian input file
+with open("0720_53FTCA.com", "w") as f:
+    f.write("%chk=output.chk\n")
+    f.write("%nprocshared=2\n")
+    f.write("%mem=1GB\n")  # specify the memory
+    f.write("#p B3LYP/6-311+G(2d,2p) EmpiricalDispersion=GD3BJ opt\n")  # specify the level of theory and job type
+    f.write("\n")
+    f.write("Title Card Required\n")  # write a title
+    f.write("\n")
+    f.write("0 1\n")  # specify the charge and multiplicity
+    for atom in mol.GetAtoms():
+        pos = mol.GetConformer().GetAtomPosition(atom.GetIdx())
+        f.write(f"{atom.GetSymbol()}    {pos.x}    {pos.y}    {pos.z}\n")
+    f.write("\n")
+
+
+
+with open("0720_F_atom.com", "w") as f:
+    f.write("%chk=F_atom.chk\n")
+    f.write("%nprocshared=2\n")
+    f.write("%mem=2GB\n")  # specify the memory
+    f.write("#p B3LYP/6-311+G(2d,2p) EmpiricalDispersion=GD3BJ opt\n")  # specify the level of theory and job type
+    f.write("\n")
+    f.write("Title Card Required\n")  # write a title
+    f.write("\n")
+    f.write("0 2\n")  # specify the charge and multiplicity (2 for F atom)
+    f.write("F    0.0    0.0    0.0\n")  # position of the F atom at the origin
+    f.write("\n")
+
+
+with open("F_atom_modified.com", "w") as f:
+    f.write("%chk=F_atom.chk\n")
+    f.write("%nprocshared=2\n")
+    f.write("%mem=1GB\n")  # specify the memory
+    f.write("#p B3LYP/6-311+G(2d,2p) EmpiricalDispersion=GD3BJ opt\n")  # specify the level of theory, dispersion correction, and job type
+    f.write("\n")
+    f.write("Title Card Required\n")  # write a title
+    f.write("\n")
+    f.write("0 2\n")  # specify the charge and multiplicity (2 for F atom)
+    f.write("F    0.0    0.0    0.0\n")  # position of the F atom at the origin
+    f.write("\n")
